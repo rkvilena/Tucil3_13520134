@@ -4,7 +4,21 @@ import java.io.IOException;
 public class FileProcess {
     public static int[][] matrixProcessing(String nameFile){
         String firstStep = fileInput(nameFile);
-        return strToMat(firstStep);
+        int[][] matrixstr = strToMat(firstStep);
+
+/*
+        for (int i =  0; i < matrixstr.length; i++){
+            for (int j =  0; j < matrixstr[0].length; j++){
+                System.out.print(matrixstr[i][j]);
+                if (j != matrixstr[0].length - 1){
+                    System.out.print("\t");
+                }
+            }
+            System.out.println("");
+        }
+*/
+
+        return matrixstr;
     }
 
     public static String fileInput(String strFile)
@@ -28,36 +42,45 @@ public class FileProcess {
 
     public static int[][] strToMat(String mat){
         String[] hasilSplit = mat.split("\n");
-        boolean isRowMax = true;
-        int i = 0;
-        while (isRowMax){
-            boolean isWhitespace = hasilSplit[i+1].matches("^\\s*$");
-            if (isWhitespace){
-                isRowMax = false;
-                i++;
-            }
-            else{
-                i++;
-            }
-        }
-        int[][] matrix = new int[i][];
-        i = 0;
-        
-        boolean matLooping = true;
-        while (i < matrix.length && (matLooping)) {
+        int[][] matrix = new int[4][4];
+        for (int i = 0; i < 4; i++){
             String[] arr2 = hasilSplit[i].split(" ");
-            matrix[i] = new int[arr2.length];
-
-            for (int j = 0; j < matrix[i].length; j++) {
-                matrix[i][j] = arr2[j].charAt(0);
+            for (int j = 0; j < 4; j++){
+                matrix[i][j] = strToInt(arr2[j]);
             }
-            boolean isWhitespace = hasilSplit[i+1].matches("^\\s*$");
-            if (isWhitespace){
-                matLooping = false;
-            }
-            i++;
         }
         return matrix;
+    }
+
+    public static int[][] convertToInt(String[][] matrixstr){
+        int[][] matrixint = new int[4][4];
+        for (int i = 0; i < 4; i++){
+            for (int j = 0; j < 4; j++){
+                matrixint[i][j] = Integer.valueOf(matrixstr[i][j]);
+            }
+        }
+
+        return matrixint;
+    }
+
+    private static int strToInt(String numstr){
+        int intresult = 0;
+        numstr = numstr.replace("\n", "").replace("\r", "");
+        int strlen = numstr.length();
+        if(strlen == 1){
+            intresult = numstr.charAt(0);
+            intresult -= 48;
+        }
+        else{
+            for (int i = 0; i < strlen; i++){
+                char tempchar = numstr.charAt(i);
+                int tempint = tempchar;
+                tempint -= 48;
+                intresult = intresult + tempint * (int)Math.pow(10, strlen - 1 - i);
+                
+            }
+        }
+        return intresult;
     }
 
     /*
