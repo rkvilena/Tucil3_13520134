@@ -114,36 +114,101 @@ class puzzle15{
     }
 
     // Method utama untuk penyelesaian puzzle
-    public void solve(){
-        /*
-        for (char direction : this.moveDirection){ 
-            if ()
-            this.possiblePath.add(this.puzzle);
+    public void solveInitial(){
+        for (int i =  0; i < this.puzzle.length; i++){
+            for (int j =  0; j < this.puzzle[0].length; j++){
+                if (this.puzzle[i][j] == 0){
+                    this.Xabsis = i;
+                    this.Xordinat = j;
+                }
+            }
         }
-        */
+        this.move(puzzle, this.Xabsis, this.Xordinat, 1);
+    }
+    public void solveTheRest(){
+        // not implemented
+    }
+    public void solve(){
+        solveInitial();
+        for (int i =  0; i < this.possiblePath.size(); i++){
+            int cost = this.possiblePath.get(i).cost;
+            System.out.println("Cost : " + cost);
+            System.out.println("-------------------");
+        }
+    }
+
+    private int cost(PuzzleState puzzle){
+        return rootToP(puzzle) + pToSolution(puzzle);
+    }
+    private int rootToP(PuzzleState puzzle){
+        System.out.println("Depth : " + puzzle.depth);
+        return puzzle.depth;
+    }
+    private int pToSolution(PuzzleState puzzle){
+        displayPuzzle(puzzle.instancepuzzle);
+        int k = 1; // Value acuan posisi puzzle
+        int gridstillwrong = 0; // Jumlah posisi yang tidak tepat
+        for (int i =  0; i < puzzle.instancepuzzle.length; i++){
+            for (int j =  0; j < puzzle.instancepuzzle[0].length; j++){
+                System.out.println(k);
+                if (puzzle.instancepuzzle[i][j] == 0){ // Penanganan khusus untuk value nol
+                    // Gagalkan pengecekan ketidakcocokan
+                }
+                else if (puzzle.instancepuzzle[i][j] != k){ // Value di [i][j] tidak tepat
+                    gridstillwrong++;
+                    System.out.println(puzzle.instancepuzzle[i][j]);
+                    System.out.println();
+                }
+                k++;
+            }   
+        }
+        System.out.println("gridstillwrong : " + gridstillwrong);
+        return gridstillwrong;
     }
 
     // Method untuk membangkitkan semua kemungkinan langkah
-    private int[][] move(int[][] puzzle, int zeroX, int zeroY){
+    private int[][] move(int[][] puzzle, int zeroX, int zeroY, int zeroMov){
         int[][] arisedstate = puzzle;
-        int x = zeroX, y = zeroY;
-        int temp = arisedstate[x][y];
+        // for (int i =  0; i < this.puzzle.length; i++){
+        //     for (int j =  0; j < this.puzzle[0].length; j++){
+        //         arisedstate[i][j] = puzzle[i][j];
+        //     }
+        // }
+        int x = zeroX;
+        int y = zeroY;
+        int temp = puzzle[x][y];
         for (int i = 0; i < this.moveDirection.length; i++){
             switch(this.moveDirection[i]) {
                 case 'U':
                     if (x != 0){
+                        // Lakukan pergerakan 0
                         arisedstate[x][y] = arisedstate[x-1][y];
                         arisedstate[x-1][y] = temp;
-                        PuzzleState possiblestate = new PuzzleState(arisedstate, 0, x-1, y);
+
+                        // Bangkitkan puzzle dengan posisi baru
+                        // Beserta informasi relevan seperti cost, posisi x dan y nya 0
+                        PuzzleState possiblestate = new PuzzleState(arisedstate, 0, x-1, y, zeroMov);
+                        possiblestate.cost = cost(possiblestate);
                         this.possiblePath.add(possiblestate);
-                        arisedstate = puzzle;
+
+                        // Kembalikan ke kondisi semula
+                        temp = arisedstate[x-1][y];
+                        arisedstate[x-1][y] = arisedstate[x][y];
+                        arisedstate[x][y] = temp;
                     }
                     break;
                 case 'R':
                     if (y != arisedstate[0].length - 1){
                         arisedstate[x][y] = arisedstate[x][y+1];
                         arisedstate[x][y+1] = temp;
-                        PuzzleState possiblestate = new PuzzleState(arisedstate, 0, x, y+1);
+
+                        PuzzleState possiblestate = new PuzzleState(arisedstate, 0, x, y+1, zeroMov);
+                        possiblestate.cost = cost(possiblestate);
+
+                        temp = arisedstate[x][y+1];
+                        arisedstate[x][y+1] = arisedstate[x][y];
+                        arisedstate[x][y] = temp;
+
                         this.possiblePath.add(possiblestate);
                         arisedstate = puzzle;
                     }
@@ -152,7 +217,14 @@ class puzzle15{
                     if (x != arisedstate.length - 1){
                         arisedstate[x][y] = arisedstate[x+1][y];
                         arisedstate[x+1][y] = temp;
-                        PuzzleState possiblestate = new PuzzleState(arisedstate, 0, x+1, y);
+
+                        PuzzleState possiblestate = new PuzzleState(arisedstate, 0, x+1, y, zeroMov);
+                        possiblestate.cost = cost(possiblestate);
+
+                        temp = arisedstate[x+1][y];
+                        arisedstate[x+1][y] = arisedstate[x][y];
+                        arisedstate[x][y] = temp;
+
                         this.possiblePath.add(possiblestate);
                         arisedstate = puzzle;
                     }
@@ -161,7 +233,14 @@ class puzzle15{
                     if (y != 0){
                         arisedstate[x][y] = arisedstate[x][y-1];
                         arisedstate[x][y-1] = temp;
-                        PuzzleState possiblestate = new PuzzleState(arisedstate, 0, x, y-1);
+
+                        PuzzleState possiblestate = new PuzzleState(arisedstate, 0, x, y-1, zeroMov);
+                        possiblestate.cost = cost(possiblestate);
+
+                        temp = arisedstate[x][y-1];
+                        arisedstate[x][y-1] = arisedstate[x][y];
+                        arisedstate[x][y] = temp;
+
                         this.possiblePath.add(possiblestate);
                         arisedstate = puzzle;
                     }
@@ -171,20 +250,11 @@ class puzzle15{
         return arisedstate;
     }
 
-    private int f(int[][] puzzle){
-        return 0;
-    }
-    private int g(int[][] puzzle){
-        return 0;
-    }
-
     public static void main(String[] args) {
         puzzle15 test = new puzzle15(true);
-        /*
-        test.possiblePath.add(test.puzzle);
-        test.displayPuzzle(test.possiblePath.get(0));
-        System.out.println(test.isReachable(test.possiblePath.get(0)));
-        */
+
+        test.solve();
+
 
     }
 }
@@ -196,17 +266,20 @@ class PuzzleState{
     public int cost;
     public int x0;
     public int y0;
+    public int depth;
 
     public PuzzleState(){
         this.instancepuzzle = new int[4][4];
         this.cost = 0;
         this.x0 = -1;
         this.y0 = -1;
+        this.depth = 0;
     }
-    public PuzzleState(int[][] p, int c, int x, int y){
+    public PuzzleState(int[][] p, int c, int x, int y, int d){
         this.instancepuzzle = p;
         this.cost = c;
         this.x0 = x;
         this.y0 = y;
+        this.depth += d;
     }
 }
