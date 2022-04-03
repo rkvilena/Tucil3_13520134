@@ -81,6 +81,9 @@ public class Frame1 {
 	private JLabel lblarisedNode;
 	private JTextField nodeTextField;
 	private JLabel lblSec;
+	private JTextField kurangITextField;
+	private JTextField kurangXTextField;
+	private boolean fileError;
 	
 	// Special function for visual center align
 	public void setToCenter(JTextPane tbm) {
@@ -120,43 +123,45 @@ public class Frame1 {
 		frame = new JFrame("15-Puzzle Solver");
 		frame.setBounds(100, 100, 750, 455);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setLocationRelativeTo(null);
+		frame.setResizable(false);
 		frame.getContentPane().setLayout(null);
 		
 		Image icon = Toolkit.getDefaultToolkit().getImage("puzzleicon.png");
 		frame.setIconImage(icon);
 		
 		JPanel panel = new JPanel();
-		panel.setBounds(0, 0, 287, 413);
+		panel.setBounds(0, 0, 315, 413);
 		frame.getContentPane().add(panel);
 		panel.setLayout(null);
 		
 		lblNewLabel = new JLabel("File Name");
-		lblNewLabel.setBounds(32, 173, 46, 14);
+		lblNewLabel.setBounds(41, 119, 62, 14);
 		panel.add(lblNewLabel);
 		
 		textField = new JTextField();
-		textField.setBounds(88, 170, 86, 20);
+		textField.setBounds(113, 116, 86, 20);
 		panel.add(textField);
 		textField.setColumns(10);
 		
 		JLabel lblSolveTime = new JLabel("Solve Duration");
-		lblSolveTime.setBounds(21, 351, 107, 14);
+		lblSolveTime.setBounds(41, 351, 107, 14);
 		panel.add(lblSolveTime);
 		
 		timeTextField = new JTextField();
 		timeTextField.setEditable(false);
 		timeTextField.setColumns(10);
-		timeTextField.setBounds(10, 365, 107, 20);
+		timeTextField.setBounds(30, 365, 107, 20);
 		panel.add(timeTextField);
 		
 		lblarisedNode = new JLabel("Arised Node");
-		lblarisedNode.setBounds(192, 351, 80, 14);
+		lblarisedNode.setBounds(212, 351, 80, 14);
 		panel.add(lblarisedNode);
 		
 		nodeTextField = new JTextField();
 		nodeTextField.setEditable(false);
 		nodeTextField.setColumns(10);
-		nodeTextField.setBounds(192, 365, 68, 20);
+		nodeTextField.setBounds(212, 365, 68, 20);
 		panel.add(nodeTextField);
 		
 		JButton nextButton = new JButton("Next");
@@ -164,24 +169,39 @@ public class Frame1 {
 		nextButton.setEnabled(false);
 		prevButton.setEnabled(false);
 		
-		nextButton.setBounds(185, 270, 89, 23);
+		nextButton.setBounds(191, 186, 89, 23);
 		panel.add(nextButton);
-		prevButton.setBounds(30, 270, 89, 23);
+		prevButton.setBounds(30, 186, 89, 23);
 		panel.add(prevButton);
 		
+		JLabel kurangILabel = new JLabel("KURANG(i)");
+		kurangILabel.setBounds(106, 235, 63, 14);
+		panel.add(kurangILabel);
+		
+		kurangITextField = new JTextField();
+		kurangITextField.setEditable(false);
+		kurangITextField.setBounds(174, 232, 86, 20);
+		panel.add(kurangITextField);
+		kurangITextField.setColumns(10);
+		
+		JLabel sumKurangX = new JLabel("Sum(KURANG(i)) + X");
+		sumKurangX.setBounds(51, 259, 118, 14);
+		panel.add(sumKurangX);
+		
+		kurangXTextField = new JTextField();
+		kurangXTextField.setEditable(false);
+		kurangXTextField.setBounds(174, 256, 86, 20);
+		panel.add(kurangXTextField);
+		kurangXTextField.setColumns(10);
+		
 		/*--- Main Feature of the GUI ---*/
-		solveButton = new JButton("Solve");
-		solveButton.setBounds(184, 169, 71, 23);
-		solveButton.addActionListener(new ActionListener() {
+		JButton insertButton = new JButton("Insert");
+		insertButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// Prev Next button initialized
-				nextButton.setEnabled(true);
-				prevButton.setEnabled(true);
-				
 				// File process & panelMatrix initialized
 				String fileName = textField.getText();
 				boolean usingFile = chckbxNewCheckBox.isSelected();
-				boolean fileError = false;
+				fileError = false;
 				try {
 					puzzleResult = new puzzle15(usingFile, fileName);
 				}
@@ -193,9 +213,6 @@ public class Frame1 {
 						textBoxMat_4,textBoxMat_5,textBoxMat_6,textBoxMat_7,
 						textBoxMat_8,textBoxMat_9,textBoxMat_10,textBoxMat_11,
 						textBoxMat_12,textBoxMat_13,textBoxMat_14,textBoxMat_15};
-				int[] solution;
-				int solutionlen;
-				
 				
 				// Visual Matrix Cleaner
 				int f = 0;
@@ -213,8 +230,36 @@ public class Frame1 {
 	    				g++;
 	    			}
 	    		}
+	    		solveButton.setEnabled(true);
+			}
+		});
+		insertButton.setBounds(209, 115, 71, 23);
+		panel.add(insertButton);
+		
+		
+		solveButton = new JButton("Solve");
+		solveButton.setBounds(209, 143, 71, 23);
+		solveButton.setEnabled(false);
+		solveButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Prev Next button initialized
+				nextButton.setEnabled(true);
+				prevButton.setEnabled(true);
+				
+				JTextPane[] panelMatrix =  {textBoxMat,textBoxMat_1,textBoxMat_2,textBoxMat_3,
+						textBoxMat_4,textBoxMat_5,textBoxMat_6,textBoxMat_7,
+						textBoxMat_8,textBoxMat_9,textBoxMat_10,textBoxMat_11,
+						textBoxMat_12,textBoxMat_13,textBoxMat_14,textBoxMat_15};
+				
+				int[] solution;
+				int solutionlen;
 	    		
-		        if (puzzleResult.isReachable(puzzleResult.getPuzzle())){
+	    		// isReachable check
+	    		boolean reachable = puzzleResult.isReachable(puzzleResult.getPuzzle());
+	    		kurangITextField.setText(Integer.toString(puzzleResult.kurangI));
+	    		kurangXTextField.setText(Integer.toString(puzzleResult.X + puzzleResult.kurangI));
+	    		
+		        if (reachable){
 		        	// Disable execute button
 					solveButton.setEnabled(false);
 					
@@ -236,18 +281,18 @@ public class Frame1 {
 		    			solution[q] = puzzleResult.solutionpath.removeFirst();
 		    			
 		    		}
-		    		for (int q = 0; q < puzzleResult.possiblePath.size(); q++) {
-		    			System.out.println("==================");
-		    			puzzleResult.displayPuzzle(puzzleResult.possiblePath.get(q).instancepuzzle);
-		    		}
-		    		System.out.print("[");
-		    		for (int q = 0; q < solutionlen-1; q++) {
-		    			System.out.print(solution[q]);
-		    			System.out.print(",");
-		    		}
-		    		System.out.println(solution[solutionlen-1]);
-		    		System.out.print("]\n");
-		    		System.out.println(solutionlen);
+//		    		for (int q = 0; q < puzzleResult.possiblePath.size(); q++) {
+//		    			System.out.println("==================");
+//		    			puzzleResult.displayPuzzle(puzzleResult.possiblePath.get(q).instancepuzzle);
+//		    		}
+//		    		System.out.print("[");
+//		    		for (int q = 0; q < solutionlen-1; q++) {
+//		    			System.out.print(solution[q]);
+//		    			System.out.print(",");
+//		    		}
+//		    		System.out.println(solution[solutionlen-1]);
+//		    		System.out.print("]\n");
+//		    		System.out.println(solutionlen);
 		    		
 		    		// Next button pressed
 	        		nextButton.addActionListener(new ActionListener() {
@@ -284,6 +329,7 @@ public class Frame1 {
 		    			}
 		    		});
 		    		JOptionPane.showMessageDialog(null, "Puzzle Solved!!\nPlease close and reopen this app to try again.\nThank You :D");
+		    		insertButton.setEnabled(false);
 		        }
 		        else{
 		        	if (!fileError) {
@@ -296,16 +342,16 @@ public class Frame1 {
 		/*--- end of button fiture ---*/
 		
 		chckbxNewCheckBox = new JCheckBox("Using test file");
-		chckbxNewCheckBox.setBounds(83, 197, 91, 23);
+		chckbxNewCheckBox.setBounds(98, 143, 112, 23);
 		panel.add(chckbxNewCheckBox);
 		
 		label = new Label("15 - PUZZLE SOLVER");
-		label.setFont(new Font("Dialog", Font.PLAIN, 23));
-		label.setBounds(37, 77, 235, 46);
+		label.setFont(new Font("Cambria Math", Font.BOLD, 23));
+		label.setBounds(41, 33, 235, 46);
 		panel.add(label);
 		
 		lblSec = new JLabel("sec");
-		lblSec.setBounds(121, 368, 36, 14);
+		lblSec.setBounds(141, 368, 36, 14);
 		panel.add(lblSec);
 		
 		panel_1 = new JPanel();

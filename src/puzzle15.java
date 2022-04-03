@@ -13,6 +13,8 @@ class puzzle15{
     // Khusus untuk visualisasi di GUI
     public double time;
     public int visualidx;
+    public int kurangI;
+    public int X;
 
     // Konstruktor kelas puzzle15
     public puzzle15(boolean uF, String file){
@@ -111,8 +113,11 @@ class puzzle15{
     // Mengembalikan true apabila bisa
     // Mengembalikan false apabila tidak bisa
     public boolean isReachable(int[][] onepuzzle){
-        int theoremresult = this.kurang(onepuzzle);
-        theoremresult += this.valueX(this.Xabsis, this.Xordinat);
+    	this.kurangI = this.kurang(onepuzzle);
+    	this.X = this.valueX(this.Xabsis, this.Xordinat);
+    	
+        int theoremresult = this.kurangI;
+        theoremresult += this.X;
         if (theoremresult % 2 == 0){
             return true;
         }
