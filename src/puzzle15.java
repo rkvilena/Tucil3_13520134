@@ -1,17 +1,21 @@
-import java.util.Scanner;
+// import java.util.Scanner;
 import java.util.*;
 class puzzle15{
     private int[][] puzzle;
     private char[] moveDirection;
     private boolean usingFile;
-    private ArrayList<PuzzleState> possiblePath;
-    private Deque<Integer> solutionpath;
     private int Xabsis;
     private int Xordinat;
     private int[][] gridcolor;
+    public ArrayList<PuzzleState> possiblePath;
+    public Deque<Integer> solutionpath;
+    
+    // Khusus untuk visualisasi di GUI
+    public double time;
+    public int visualidx;
 
     // Konstruktor kelas puzzle15
-    public puzzle15(boolean uF){
+    public puzzle15(boolean uF, String file){
         this.puzzle = new int[4][4];
         this.usingFile = uF;
         this.possiblePath = new ArrayList<>();
@@ -19,6 +23,8 @@ class puzzle15{
         this.Xabsis = -1;
         this.Xordinat = -1;
         this.moveDirection = new char[]{'U','R','D','L'};
+        this.time = 0.0000;
+        this.visualidx = 0;
         this.gridcolor = new int[][]
         {{0,1,0,1},
         {1,0,1,0},
@@ -26,10 +32,7 @@ class puzzle15{
         {1,0,1,0}};
 
         if (this.usingFile){ // Input persoalan melalui file
-            Scanner input = new Scanner(System.in);
-            String file = input.nextLine();
             this.puzzle = FileProcess.matrixProcessing(file);
-            input.close();
         }
         else{ // Persoalan dibuat secara acak menggunakan random()
             int[] alreadyGenerated = new int[16];
@@ -45,9 +48,13 @@ class puzzle15{
             }
         }
     }
+    
+    public int[][] getPuzzle(){
+    	return this.puzzle;
+    }
 
     // Method untuk tampilkan matriks puzzle
-    private void displayPuzzle(int[][] puzzle){
+    public void displayPuzzle(int[][] puzzle){
         for (int i =  0; i < puzzle.length; i++){
             for (int j =  0; j < puzzle[0].length; j++){
                 System.out.print(puzzle[i][j]);
@@ -103,7 +110,7 @@ class puzzle15{
     // Method untuk menentukan bisa tidaknya puzzle diselesaikan
     // Mengembalikan true apabila bisa
     // Mengembalikan false apabila tidak bisa
-    private boolean isReachable(int[][] onepuzzle){
+    public boolean isReachable(int[][] onepuzzle){
         int theoremresult = this.kurang(onepuzzle);
         theoremresult += this.valueX(this.Xabsis, this.Xordinat);
         if (theoremresult % 2 == 0){
@@ -117,8 +124,6 @@ class puzzle15{
     // dengan cara mencatat koordinat 0
     // dan membangkitkan antrian child pertama
     private void solveInitial(){
-        displayPuzzle(this.puzzle);
-        System.out.println("\nStart Solve...");
         for (int i =  0; i < this.puzzle.length; i++){
             for (int j =  0; j < this.puzzle[0].length; j++){
                 if (this.puzzle[i][j] == 0){
@@ -136,7 +141,6 @@ class puzzle15{
     // child yang pertama dibangkitkan 
     private PuzzleState solveTheRest(){
         boolean finished = false;
-        int c = 0;
         PuzzleState lastPS = new PuzzleState();
         while (!finished){
             PuzzleState chosenp = new PuzzleState();
@@ -166,7 +170,6 @@ class puzzle15{
             
             // Memastikan apakah puzzle yang dipilih sudah memenuhi solusi
             if (pToSolution(chosenp) == 0){
-                System.out.println("Puzzle Solved!");
                 finished = true;
                 lastPS.setPuzzleState(chosenp);
                 this.solutionpath.push(pPathIdx);
@@ -174,11 +177,10 @@ class puzzle15{
             else{
                 this.move(chosenp.instancepuzzle, chosenp.x0, chosenp.y0, 1, chosenp.prevMove, chosenp.depth, pPathIdx);
             }
-            c++;
         }
         return lastPS;
     }
-    public void solve(){
+    public puzzle15 solve(){
         // Mulai waktu pencarian
         long start = System.nanoTime();
 
@@ -188,23 +190,11 @@ class puzzle15{
 
         // Hentikan dan catat waktu pencarian
         long elapsedTime = System.nanoTime() - start;
-        double seconds = elapsedTime / 1_000_000_000.0;
-        System.out.print("Solving time : ");
-        System.out.print(seconds);
-        System.out.print(" s.\n");
+        this.time = elapsedTime / 1_000_000_000.0;
 
         // Menuliskan indeks dari jalan start menuju solusi puzzle
         this.writePathIdx(finalState);
-
-        System.out.println("\n--- Solution Path ---");
-        int solutionlength = this.solutionpath.size();
-        int iter = 0;
-        while (iter < solutionlength){
-            // System.out.println(this.solutionpath.removeFirst());
-            displayPuzzle(this.possiblePath.get(this.solutionpath.removeFirst()).instancepuzzle);
-            System.out.println("");
-            iter++;
-        }
+        return this;
     }
 
     // Method untuk mencatat indeks solusi
@@ -334,15 +324,15 @@ class puzzle15{
         }
     }
 
-    public static void main(String[] args) {
-        puzzle15 test = new puzzle15(true);
-        if (test.isReachable(test.puzzle)){
-            test.solve();
-        }
-        else{
-            System.out.println("Unreachable");
-        }
-    }
+//    public static void main(String[] args) {
+//        puzzle15 test = new puzzle15(true);
+//        if (test.isReachable(test.puzzle)){
+//            test.solve();
+//        }
+//        else{
+//            System.out.println("Unreachable");
+//        }
+//    }
 }
 
 // Kelas untuk menampung data hasil pembangkitan
