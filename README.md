@@ -9,8 +9,11 @@ Tampilan program yang digunakan berbasis GUI dari Java Swing yang dikerjakan di 
 
 ## How to Run
 1. Buka cmd
-2. Masuk ke direktori /bin pada folder 15-puzzle
+2. Masuk ke direktori /bin pada folder Tucil3_13520134
 3. Input ketikan berikut tanpa tanda petik "java -jar Puzzle15.jar"
+4. Klik tombol inherit tanpa memilih "Using Test File" apabila ingin instantiasi random
+5. Klik tombol "Using Test File" kemudian masukkan nama file uji apabila ingin menggunakan file
+6. Apabila reachable, klik solve untuk melakukan penyelesaian
 
 * Cara ini bisa juga diterapkan di terminal VS Code
 * Pastikan file yang ingin diuji coba sudah berada di folder test.
