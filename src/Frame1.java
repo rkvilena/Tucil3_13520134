@@ -81,9 +81,9 @@ public class Frame1 {
 	private JLabel lblarisedNode;
 	private JTextField nodeTextField;
 	private JLabel lblSec;
-	private JTextField kurangITextField;
 	private JTextField kurangXTextField;
 	private boolean fileError;
+	private boolean reachable;
 	
 	// Special function for visual center align
 	public void setToCenter(JTextPane tbm) {
@@ -174,16 +174,6 @@ public class Frame1 {
 		prevButton.setBounds(30, 186, 89, 23);
 		panel.add(prevButton);
 		
-		JLabel kurangILabel = new JLabel("KURANG(i)");
-		kurangILabel.setBounds(106, 235, 63, 14);
-		panel.add(kurangILabel);
-		
-		kurangITextField = new JTextField();
-		kurangITextField.setEditable(false);
-		kurangITextField.setBounds(174, 232, 86, 20);
-		panel.add(kurangITextField);
-		kurangITextField.setColumns(10);
-		
 		JLabel sumKurangX = new JLabel("Sum(KURANG(i)) + X");
 		sumKurangX.setBounds(51, 259, 118, 14);
 		panel.add(sumKurangX);
@@ -230,6 +220,16 @@ public class Frame1 {
 	    				g++;
 	    			}
 	    		}
+	    		// isReachable check
+	    		reachable = puzzleResult.isReachable(puzzleResult.getPuzzle());
+	    		System.out.println("|----------Tabel KurangI----------|");
+	    		System.out.println("\ti\t    Kurang(i)");
+	    		System.out.println(">---------------------------------<");
+	    		for (int i = 0; i < puzzleResult.kurangItable.length; i++) {
+	    			System.out.println("\t" + (i+1) + "\t\t" + puzzleResult.kurangItable[i]); 
+    			}
+	    		System.out.println("|---------------------------------|");
+	    		kurangXTextField.setText(Integer.toString(puzzleResult.X + puzzleResult.kurangI));
 	    		solveButton.setEnabled(true);
 			}
 		});
@@ -241,6 +241,7 @@ public class Frame1 {
 		solveButton.setBounds(209, 143, 71, 23);
 		solveButton.setEnabled(false);
 		solveButton.addActionListener(new ActionListener() {
+
 			public void actionPerformed(ActionEvent e) {
 				// Prev Next button initialized
 				nextButton.setEnabled(true);
@@ -253,11 +254,6 @@ public class Frame1 {
 				
 				int[] solution;
 				int solutionlen;
-	    		
-	    		// isReachable check
-	    		boolean reachable = puzzleResult.isReachable(puzzleResult.getPuzzle());
-	    		kurangITextField.setText(Integer.toString(puzzleResult.kurangI));
-	    		kurangXTextField.setText(Integer.toString(puzzleResult.X + puzzleResult.kurangI));
 	    		
 		        if (reachable){
 		        	// Disable execute button
@@ -276,23 +272,11 @@ public class Frame1 {
 		    		// Functionalizing prev & next
 		        	solutionlen= puzzleResult.solutionpath.size();
 		    		solution = new int[solutionlen];
-		    		System.out.println("Solution Length : " + solutionlen);
+
 		    		for (int q = 0; q < solutionlen; q++) {
 		    			solution[q] = puzzleResult.solutionpath.removeFirst();
 		    			
 		    		}
-//		    		for (int q = 0; q < puzzleResult.possiblePath.size(); q++) {
-//		    			System.out.println("==================");
-//		    			puzzleResult.displayPuzzle(puzzleResult.possiblePath.get(q).instancepuzzle);
-//		    		}
-//		    		System.out.print("[");
-//		    		for (int q = 0; q < solutionlen-1; q++) {
-//		    			System.out.print(solution[q]);
-//		    			System.out.print(",");
-//		    		}
-//		    		System.out.println(solution[solutionlen-1]);
-//		    		System.out.print("]\n");
-//		    		System.out.println(solutionlen);
 		    		
 		    		// Next button pressed
 	        		nextButton.addActionListener(new ActionListener() {
@@ -342,7 +326,7 @@ public class Frame1 {
 		/*--- end of button fiture ---*/
 		
 		chckbxNewCheckBox = new JCheckBox("Using test file");
-		chckbxNewCheckBox.setBounds(98, 143, 112, 23);
+		chckbxNewCheckBox.setBounds(85, 143, 113, 23);
 		panel.add(chckbxNewCheckBox);
 		
 		label = new Label("15 - PUZZLE SOLVER");

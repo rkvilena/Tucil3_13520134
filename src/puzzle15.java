@@ -9,6 +9,7 @@ class puzzle15{
     private int[][] gridcolor;
     public ArrayList<PuzzleState> possiblePath;
     public Deque<Integer> solutionpath;
+    public int[] kurangItable;
     
     // Khusus untuk visualisasi di GUI
     public double time;
@@ -25,6 +26,7 @@ class puzzle15{
         this.Xabsis = -1;
         this.Xordinat = -1;
         this.moveDirection = new char[]{'U','R','D','L'};
+        this.kurangItable = new int[16];
         this.time = 0.0000;
         this.visualidx = 0;
         this.gridcolor = new int[][]
@@ -73,13 +75,22 @@ class puzzle15{
         int kurangI = 0;
         int[] puzzleseq = matToArr(onepuzzle);
         for (int i = 0; i < puzzleseq.length; i++){
+        	int kItablevis = 0;
             for (int j = i + 1; j < puzzleseq.length; j++){
                 if (puzzleseq[i] > puzzleseq[j] && puzzleseq[j] != 0 && puzzleseq[i] != 0){
                     kurangI++;
+                    kItablevis++;
                 }
                 if (puzzleseq[i] == 0){
                     kurangI++;
+                    kItablevis++;
                 }
+            }
+            if (puzzleseq[i] == 0) {
+            	this.kurangItable[15] = kItablevis;
+            }
+            else {
+            	this.kurangItable[puzzleseq[i] - 1] = kItablevis;
             }
         }
         return kurangI;
@@ -137,7 +148,8 @@ class puzzle15{
                 }
             }
         }
-        PuzzleState firstPuzzle = new PuzzleState(this.puzzle, -999, this.Xabsis, this.Xordinat, 0, 'X', -1);
+        PuzzleState firstPuzzle = new PuzzleState(this.puzzle, -999, this.Xabsis, this.Xordinat, 0, 'X', -1, false);
+        firstPuzzle.alreadyChoosed = true;
         this.possiblePath.add(firstPuzzle);
         this.move(this.puzzle, this.Xabsis, this.Xordinat, 1, 'X', 0, 0);
     }
@@ -152,20 +164,22 @@ class puzzle15{
             int maxDepth = 0;
             int pPathIdx = 0;
             for (int i = 0; i < this.possiblePath.size(); i++){
-                if (maxDepth < this.possiblePath.get(i).depth){
+                if (maxDepth < this.possiblePath.get(i).depth && (!this.possiblePath.get(i).alreadyChoosed)){
                     chosenp.setPuzzleState(this.possiblePath.get(i));
                     pPathIdx = i;
                 }
             }
             for (int k = 0; k < this.possiblePath.size(); k++){
                 int cost = this.possiblePath.get(k).cost;
-                if (cost != -999){
+                if ((cost != -999) && (!this.possiblePath.get(k).alreadyChoosed)){
                     if (chosenp.cost > cost){
+                    	this.possiblePath.get(k).alreadyChoosed = true;
                         chosenp.setPuzzleState(this.possiblePath.get(k));
                         pPathIdx = k;
                     }
                     else if (chosenp.cost == cost){
                         if (chosenp.depth < this.possiblePath.get(k).depth){
+                        	this.possiblePath.get(k).alreadyChoosed = true;
                             chosenp.setPuzzleState(this.possiblePath.get(k));
                             pPathIdx = k;
                         }
@@ -180,12 +194,15 @@ class puzzle15{
                 this.solutionpath.push(pPathIdx);
             }
             else{
+//            	System.out.println("Chosen : ");
+//                displayPuzzle(chosenp.instancepuzzle);
                 this.move(chosenp.instancepuzzle, chosenp.x0, chosenp.y0, 1, chosenp.prevMove, chosenp.depth, pPathIdx);
             }
         }
         return lastPS;
     }
     public puzzle15 solve(){
+    	System.out.println("Solving...");
         // Mulai waktu pencarian
         long start = System.nanoTime();
 
@@ -199,6 +216,7 @@ class puzzle15{
 
         // Menuliskan indeks dari jalan start menuju solusi puzzle
         this.writePathIdx(finalState);
+        System.out.println("Puzzle Solved!");
         return this;
     }
 
@@ -213,6 +231,23 @@ class puzzle15{
         }
         
     }
+    
+    // Method untuk memeriksa apakah puzzle yang dibangkitkan
+    // sudah pernah ada di possible path
+	public boolean isPuzzleInPP(int[][] a) {
+		int p = 0;
+		while (p < this.possiblePath.size()) {
+			int[][] b = this.possiblePath.get(p).instancepuzzle;
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					if(a[i][j] != b[i][j]) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
 
     // Method untuk menghitung cost
     private int cost(PuzzleState puzzle){
@@ -245,7 +280,7 @@ class puzzle15{
     }
 
     // Method untuk membangkitkan semua kemungkinan langkah
-    private void move(int[][] puzzle, int zeroX, int zeroY, int zeroMov, char lastMovement, int lastLevel, int thisidx){
+    private void move(int[][] puzzle, int zeroX, int zeroY, int zeroMov, char lastMovement, int lastLevel, int thisidx){	
         int[][] arisedstate = new int[4][4];
         for (int i =  0; i < arisedstate.length; i++){
             for (int j =  0; j < arisedstate[0].length; j++){
@@ -264,14 +299,15 @@ class puzzle15{
                         // Lakukan pergerakan 0
                         arisedstate[x][y] = arisedstate[x-1][y];
                         arisedstate[x-1][y] = temp;
-
-                        // Bangkitkan puzzle dengan posisi baru
-                        // Beserta informasi relevan seperti cost, posisi x dan y nya 0
-                        PuzzleState possiblestate;
-                        possiblestate = new PuzzleState(arisedstate, 0, x-1, y, currentZM, 'U', thisidx);
-                        possiblestate.cost = cost(possiblestate);
-                        this.possiblePath.add(possiblestate);
-
+                        
+                        if (!isPuzzleInPP(arisedstate)) {
+                        	// Bangkitkan puzzle dengan posisi baru
+                            // Beserta informasi relevan seperti cost, posisi x dan y nya 0
+                            PuzzleState possiblestate;
+                            possiblestate = new PuzzleState(arisedstate, 0, x-1, y, currentZM, 'U', thisidx, false);
+                            possiblestate.cost = cost(possiblestate);
+                            this.possiblePath.add(possiblestate);
+                        }
                         // Kembalikan ke kondisi semula
                         temp = arisedstate[x-1][y];
                         arisedstate[x-1][y] = arisedstate[x][y];
@@ -282,11 +318,15 @@ class puzzle15{
                     if (y != arisedstate[0].length - 1  && lastMovement != 'L'){
                         arisedstate[x][y] = arisedstate[x][y+1];
                         arisedstate[x][y+1] = temp;
-
-                        PuzzleState possiblestate;
-                        possiblestate = new PuzzleState(arisedstate, 0, x, y+1, currentZM, 'R', thisidx);
-                        possiblestate.cost = cost(possiblestate);
-                        this.possiblePath.add(possiblestate);
+                        
+                        if (!isPuzzleInPP(arisedstate)) {
+                        	// Bangkitkan puzzle dengan posisi baru
+                            // Beserta informasi relevan seperti cost, posisi x dan y nya 0
+                        	PuzzleState possiblestate;
+                            possiblestate = new PuzzleState(arisedstate, 0, x, y+1, currentZM, 'R', thisidx, false);
+                            possiblestate.cost = cost(possiblestate);
+                            this.possiblePath.add(possiblestate);
+                        }
 
                         temp = arisedstate[x][y+1];
                         arisedstate[x][y+1] = arisedstate[x][y];
@@ -297,11 +337,15 @@ class puzzle15{
                     if (x != arisedstate.length - 1 && lastMovement != 'U'){
                         arisedstate[x][y] = arisedstate[x+1][y];
                         arisedstate[x+1][y] = temp;
-
-                        PuzzleState possiblestate;
-                        possiblestate = new PuzzleState(arisedstate, 0, x+1, y, currentZM, 'D', thisidx);
-                        possiblestate.cost = cost(possiblestate);
-                        this.possiblePath.add(possiblestate);
+                        
+                        if (!isPuzzleInPP(arisedstate)) {
+                        	// Bangkitkan puzzle dengan posisi baru
+                            // Beserta informasi relevan seperti cost, posisi x dan y nya 0
+                        	PuzzleState possiblestate;
+                            possiblestate = new PuzzleState(arisedstate, 0, x+1, y, currentZM, 'D', thisidx, false);
+                            possiblestate.cost = cost(possiblestate);
+                            this.possiblePath.add(possiblestate);
+                        }
 
                         temp = arisedstate[x+1][y];
                         arisedstate[x+1][y] = arisedstate[x][y];
@@ -312,11 +356,15 @@ class puzzle15{
                     if (y != 0 && lastMovement != 'R'){
                         arisedstate[x][y] = arisedstate[x][y-1];
                         arisedstate[x][y-1] = temp;
-
-                        PuzzleState possiblestate;
-                        possiblestate = new PuzzleState(arisedstate, 0, x, y-1, currentZM, 'L', thisidx);
-                        possiblestate.cost = cost(possiblestate);
-                        this.possiblePath.add(possiblestate);
+                        
+                        if (!isPuzzleInPP(arisedstate)) {
+                        	// Bangkitkan puzzle dengan posisi baru
+                            // Beserta informasi relevan seperti cost, posisi x dan y nya 0
+                        	PuzzleState possiblestate;
+                            possiblestate = new PuzzleState(arisedstate, 0, x, y-1, currentZM, 'L', thisidx, false);
+                            possiblestate.cost = cost(possiblestate);
+                            this.possiblePath.add(possiblestate);
+                        }
 
                         temp = arisedstate[x][y-1];
                         arisedstate[x][y-1] = arisedstate[x][y];
@@ -350,6 +398,7 @@ class PuzzleState{
     public int depth;
     public char prevMove;
     public int prevStateIdx;
+    public boolean alreadyChoosed;
 
     public PuzzleState(){
         this.instancepuzzle = new int[4][4];
@@ -359,8 +408,9 @@ class PuzzleState{
         this.depth = 0;
         this.prevMove = 'X';
         this.prevStateIdx = -1;
+        this.alreadyChoosed = false;
     }
-    public PuzzleState(int[][] p, int c, int x, int y, int d, char m, int psi){
+    public PuzzleState(int[][] p, int c, int x, int y, int d, char m, int psi, boolean ac){
         this.instancepuzzle = new int[4][4];
         this.cost = c;
         this.x0 = x;
@@ -368,6 +418,7 @@ class PuzzleState{
         this.depth += d;
         this.prevMove = m;
         this.prevStateIdx = psi;
+        this.alreadyChoosed = ac;
         for (int i =  0; i < this.instancepuzzle.length; i++){
             for (int j =  0; j < this.instancepuzzle[0].length; j++){
                 this.instancepuzzle[i][j] = p[i][j];
@@ -382,6 +433,7 @@ class PuzzleState{
         this.depth = ps.depth;
         this.prevMove = ps.prevMove;
         this.prevStateIdx = ps.prevStateIdx;
+        this.alreadyChoosed = ps.alreadyChoosed;
 
         for (int i =  0; i < this.instancepuzzle.length; i++){
             for (int j =  0; j < this.instancepuzzle[0].length; j++){
